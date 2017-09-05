@@ -1,0 +1,115 @@
+#include <algorithm>
+#include <vector>
+#include "kdTree.hpp"
+#include "utils.hpp"
+
+KDTree::KDTree(vector<Point>& points, const size_t maxDepth) {
+    this->root = nullptr;
+    this->dimensions = points.at(0).size();
+    root = buildTree(points,this->dimensions, maxDepth);
+}
+
+KDNode* KDTree::buildTree(vector<Point>& points, const size_t dimensions, const size_t maxDepth) {
+    vector<vector<size_t> > sortedIdxs(dimensions, vector<size_t>(points.size()));
+    // Just initialize the first vector, because we need to find duplicates before sorting all the other vectors.
+    // To do that, first the vector at 0 is sorted, then the removeDuplicatesIndex is applied in there,
+    // finally it is copied to all the remaining vectors.
+    for (size_t i = 0; i < points.size(); i++)
+        sortedIdxs[0][i] = i;
+
+    auto compareFunc = [&](const auto& a, const auto& b) {
+        return comparePoints(points[a], points[b], 0, dimensions) < 0; 
+    };     
+
+    sort(sortedIdxs[0].begin(), sortedIdxs[0].end(), compareFunc);
+    removeDuplicatesIndex(points, sortedIdxs[0]);
+
+    // Copying and sorting the remaining vectors:
+    for (size_t i = 1; i < dimensions; i++) {
+        sortedIdxs[i] = sortedIdxs[0];
+        sort(sortedIdxs[i].begin(), sortedIdxs[i].end(), compareFunc);
+    }
+
+    return buildSubTrees(points, sortedIdxs, 0, dimensions, dimensions, maxDepth, 0);
+}
+
+KDNode* KDTree::buildSubTrees(vector<Point>& points,
+        vector<vector<size_t> >& sortedIdxs,
+        const size_t first, const size_t last,
+        const size_t dimensions, const size_t maxDepth, const size_t crrntDepth) {
+    // Build the tree recursively.
+
+    // if (first > last) ERROR
+    size_t pointsQtty = last - first;
+
+    if (pointsQtty <= 3) {
+        if (pointsQtty == 3) {
+            KDNode* node = new KDNode(move(points[sortedIdxs[0][first + 1]]));
+            node->childs[0] = new KDNode(move(points[sortedIdxs[0][first]]));
+            node->childs[1] = new KDNode(move(points[sortedIdxs[0][first + 2]]));
+            return node;
+        }        
+        else if (pointsQtty == 2) {
+            KDNode* node = new KDNode(move(points[sortedIdxs[0][first + 1]]));
+            node->childs[0] = new KDNode(move(points[sortedIdxs[0][first]]));
+            return node; 
+        }
+        else if (pointsQtty == 1) {
+            KDNode* node = new KDNode(move(points[sortedIdxs[0][first]]));
+            return node; 
+        }
+        else 
+            return nullptr;
+    }
+
+    size_t actualDim = maxDepth % dimensions;
+    size_t median = first + (pointsQtty - 1) / 2;
+    size_t medianIdx = sortedIdxs[0][median];
+    KDNode* node = new KDNode(move(points[medianIdx]));
+    // The median is now in the KDNode node
+
+    if (crrntDepth >= maxDepth) {
+        KDNode* tmp = node;
+        for (size_t i = 0; i < median - first; i++) {
+            tmp->childs[0] = new KDNode(move(points[sortedIdxs[0][first + i]]));
+            tmp = tmp->childs[0];
+        }
+        tmp = node;
+        for (size_t i = 0; i < last - median; i++) {
+            tmp->childs[1] = new KDNode(move(points[sortedIdxs[0][median + 1 + i]]));
+            tmp = tmp->childs[1];
+        }
+        return node;
+    }
+
+
+    // Reordering the indexes:
+    vector<size_t> temp = sortedIdxs[0];
+    for (size_t i = 1; i < dimensions; i++) {
+        size_t firstHalf = first;
+        size_t secondHalf = first + median + 1;
+        for (size_t j = first; j < last; j++) {
+            size_t idx = sortedIdxs[i][j];
+            int cmp = comparePoints(node->data, points[idx], actualDim, dimensions);
+            if (cmp < 0) {
+                sortedIdxs[i-1][firstHalf] = idx;
+                firstHalf++;
+            }
+            else if (cmp > 0) {
+                sortedIdxs[i-1][secondHalf] = idx;
+                secondHalf++;
+            }
+        }
+    } 
+    sortedIdxs.back() = temp;
+
+    // Calling the function recursively
+    node->childs[0] = this->buildSubTrees(points, sortedIdxs, first, median, dimensions, maxDepth, crrntDepth + 1);
+    node->childs[1] = this->buildSubTrees(points, sortedIdxs, median + 1, last, dimensions, maxDepth, crrntDepth + 1);
+
+    return node;
+}
+
+KDTree::~KDTree() {
+//  TODO
+};
