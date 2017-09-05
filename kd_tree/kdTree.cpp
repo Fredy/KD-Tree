@@ -9,6 +9,7 @@ KDTree::KDTree(vector<Point>& points, const size_t maxDepth) {
     this->dimensions = points.at(0).size();
     this->depth = maxDepth;
     this->root = buildTree(points,this->dimensions, maxDepth);
+    this->types = {Types::STRING, Types::STRING, Types::DOUBLE, Types::DOUBLE, Types::STRING, Types::STRING};
 }
 
 KDNode* KDTree::buildTree(vector<Point>& points, const size_t dimensions, const size_t maxDepth) {
@@ -22,7 +23,7 @@ KDNode* KDTree::buildTree(vector<Point>& points, const size_t dimensions, const 
 
     size_t signDim = 0;
     auto compareFunc = [&](const auto& a, const auto& b) {
-        return comparePoints(points[a], points[b], signDim, dimensions) < 0; 
+        return comparePoints(points[a], points[b], this->types, signDim, dimensions) < 0; 
     };     
 
     sort(sortedIdxs[0].begin(), sortedIdxs[0].end(), compareFunc);
@@ -97,7 +98,7 @@ KDNode* KDTree::buildSubTrees(vector<Point>& points,
             size_t idx = sortedIdxs[i][j];
             if (points[idx].empty())
                 continue;
-            int cmp = comparePoints(points[idx], node->data, actualDim, dimensions);
+            int cmp = comparePoints(points[idx], node->data, this->types, actualDim, dimensions);
             if (cmp < 0) {
                 sortedIdxs[i-1][firstHalf] = idx;
                 firstHalf++;
@@ -132,7 +133,7 @@ KDNode* KDTree::find(const Point& srchPoint) {
         if (crrntDepth == this->depth - 1) {
             size_t crrntDim = crrntDepth % this->dimensions; 
             while (ptr and comp != 0) {
-                comp = comparePoints(srchPoint, ptr->data, crrntDim, this->dimensions);
+                comp = comparePoints(srchPoint, ptr->data, this->types, crrntDim, this->dimensions);
                 crrntDepth++;
                 if (comp > 0)
                     ptr = ptr->childs[1];
@@ -142,7 +143,7 @@ KDNode* KDTree::find(const Point& srchPoint) {
             return ptr;
         }
 
-        comp = comparePoints(srchPoint, ptr->data, crrntDepth % this->dimensions, this->dimensions);
+        comp = comparePoints(srchPoint, ptr->data, this->types, crrntDepth % this->dimensions, this->dimensions);
         crrntDepth++;
         if (comp > 0)
             ptr = ptr->childs[1];

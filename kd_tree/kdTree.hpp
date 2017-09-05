@@ -1,11 +1,15 @@
 #pragma once
 #include "kdNode.hpp"
+#include "utils.hpp"
 
 class KDTree {
 public:
+    
+
     KDNode* root;
     size_t dimensions;
     size_t depth;
+    vector<Types> types;
     
     KDTree() {
         root = nullptr;

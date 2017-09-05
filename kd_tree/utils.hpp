@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -6,6 +7,12 @@
 using namespace std;
 
 using Point = vector<string>;
+
+enum class Types {
+    STRING,
+    INT,
+    DOUBLE,
+};
 
 inline vector<string> splitStr(const string& str, const char delim) {
     // Splits a string, using delim as the delimiter and return 
@@ -102,7 +109,7 @@ inline vector<Point> readCSV(istream& file, const bool hasHeader) {
     return points;
 }
 
-inline int comparePoints(const Point& a, const Point& b, const size_t sgnf, const size_t dim) { 
+inline int comparePoints(const Point& a, const Point& b, const vector<Types>& types, const size_t sgnf, const size_t dim) { 
     // Compare a and b using the most significant dimension (or the sorting dimension).
     // Compares the next dimension if the actual one is equal in bot points.
     // If a < b -> returns negative, if a >b returns positive, else returns 0.
@@ -111,7 +118,22 @@ inline int comparePoints(const Point& a, const Point& b, const size_t sgnf, cons
         if (it >= dim)
             it = it - dim;
         if (a[it] != b[it]) {
-            if (a[it] < b[it])
+            bool comp;
+            // TODO: use switch case.
+            if (types[it] == Types::STRING) {
+                cout << "str " << endl;
+                comp = a[it] < b[it];
+            }
+            else if (types[it] == Types::DOUBLE) {
+                cout << "dou" << endl;
+                // TODO: soncider "NULL" string!!!!
+                comp = stod(a[it]) < stod(a[it]);
+            }
+            else if (types[it] == Types::INT) {
+                cout << "int" << endl;
+                comp = stoi(a[it]) < stoi(b[it]);
+            }
+            if (comp)
                 return -1;
             else 
                 return 1;
