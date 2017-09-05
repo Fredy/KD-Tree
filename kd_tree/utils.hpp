@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -61,7 +60,7 @@ inline size_t countFileLines(istream& file) {
     return cnt;
 }
 
-inline int typeOfStrVal(const string& str) {
+inline Types typeOfStrVal(const string& str) {
     // Returns an integer representing the type of data in a string:
     // 0: string
     // 1: integer
@@ -71,12 +70,47 @@ inline int typeOfStrVal(const string& str) {
 
     if (firstchar == 0 and lastchar == str.size() - 1) {
         if (str.find_first_of('.') != string::npos)
-            return 2;
+            return Types::DOUBLE;
         else
-            return 1;
+            return Types::INT;
     }
     else
-        return 0;
+        return Types::STRING;
+}
+
+inline vector<Types> typesOfPoints(const vector<Point>& points) {
+    // Recognices the types of each data in a point, using typeOfStrVal.
+    const size_t dim = points.at(0).size();
+    vector<vector<size_t> > typesCheck(dim, vector<size_t>(3, 0));
+    for (const auto& point: points) {
+        for(size_t i = 0; i < dim; i++) {
+           switch (typeOfStrVal(point[i])) {
+                case Types::STRING:
+                    typesCheck[i][0]++;
+                    break;
+                case Types::INT:
+                    typesCheck[i][1]++;
+                    break;
+                case Types::DOUBLE:
+                    typesCheck[i][2]++;
+                    break;
+           }
+        }
+    }
+
+    vector<Types> res(dim);
+    for (size_t i = 0; i < dim; i++) {
+        auto maxElementIt = max_element(typesCheck[i].begin(), typesCheck[i].end());
+        size_t it = maxElementIt - typesCheck[i].begin();
+        if (it == 0)
+            res[i] = Types::STRING;
+        else if (it == 1)
+            res[i] = Types::INT;
+        else if (it == 2)
+            res[i] = Types::DOUBLE;
+    }
+
+    return res;
 }
 
 inline vector<Point> readCSV(istream& file, const bool hasHeader) {
@@ -119,19 +153,17 @@ inline int comparePoints(const Point& a, const Point& b, const vector<Types>& ty
             it = it - dim;
         if (a[it] != b[it]) {
             bool comp;
-            // TODO: use switch case.
-            if (types[it] == Types::STRING) {
-                cout << "str " << endl;
-                comp = a[it] < b[it];
-            }
-            else if (types[it] == Types::DOUBLE) {
-                cout << "dou" << endl;
-                // TODO: soncider "NULL" string!!!!
-                comp = stod(a[it]) < stod(a[it]);
-            }
-            else if (types[it] == Types::INT) {
-                cout << "int" << endl;
-                comp = stoi(a[it]) < stoi(b[it]);
+            switch (types[it]) {
+                case Types::STRING:
+                    comp = a[it] < b[it];
+                    break;
+                case Types::INT:
+                    // TODO: consider "NULL" string!!!!
+                    comp = stoi(a[it]) < stoi(a[it]);
+                    break;
+                case Types::DOUBLE:
+                    comp = stod(a[it]) < stod(b[it]);
+                    break;
             }
             if (comp)
                 return -1;

@@ -8,8 +8,8 @@
 KDTree::KDTree(vector<Point>& points, const size_t maxDepth) {
     this->dimensions = points.at(0).size();
     this->depth = maxDepth;
+    this->types = typesOfPoints(points);
     this->root = buildTree(points,this->dimensions, maxDepth);
-    this->types = {Types::STRING, Types::STRING, Types::DOUBLE, Types::DOUBLE, Types::STRING, Types::STRING};
 }
 
 KDNode* KDTree::buildTree(vector<Point>& points, const size_t dimensions, const size_t maxDepth) {
