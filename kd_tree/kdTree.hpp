@@ -5,6 +5,7 @@ class KDTree {
 public:
     KDNode* root;
     size_t dimensions;
+    size_t depth;
     
     KDTree() {
         root = nullptr;
