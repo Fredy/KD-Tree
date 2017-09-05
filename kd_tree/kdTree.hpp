@@ -16,5 +16,8 @@ public:
     KDNode* buildSubTrees(vector<Point>& points, vector<vector<size_t> >& sortedIdxs,
             const size_t first, const size_t last,
             const size_t dimensions, const size_t maxDepth, const size_t crrntDepth);
+
+    KDNode* find(const Point& srchPoint) ;
+    void print();
     ~KDTree();
 };

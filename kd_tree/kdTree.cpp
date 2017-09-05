@@ -1,5 +1,7 @@
 #include <algorithm>
 #include <vector>
+#include <queue>
+#include <iostream>
 #include "kdTree.hpp"
 #include "utils.hpp"
 
@@ -74,7 +76,7 @@ KDNode* KDTree::buildSubTrees(vector<Point>& points,
     if (crrntDepth >= maxDepth - 1) {
         KDNode* tmp = node;
         for (size_t i = 0; i < median - first; i++) {
-            tmp->childs[0] = new KDNode(move(points[sortedIdxs[0][first + i]]));
+            tmp->childs[0] = new KDNode(move(points[sortedIdxs[0][median - 1 - i]]));
             tmp = tmp->childs[0];
         }
         tmp = node;
@@ -114,6 +116,57 @@ KDNode* KDTree::buildSubTrees(vector<Point>& points,
     node->childs[1] = this->buildSubTrees(points, sortedIdxs, median + 1, last, dimensions, maxDepth, crrntDepth + 1);
 
     return node;
+}
+
+
+KDNode* KDTree::find(const Point& srchPoint) {
+    // Find the srchPoint in the tree, if it is found, returns a pointer to it
+    // if not, returns a nullptr.
+    KDNode* ptr = this->root;
+    int comp = -1;
+    size_t crrntDepth = 0;
+    while (ptr and comp != 0) {
+        // TODO: test this !: if the current depth is greater than this->depth all the nodes are
+        // in 2 lists: all the left childs and all the right childs,
+        // in this case use the crrntDepth % dimensions to perform all the remaining comparisons.
+        if (crrntDepth == this->depth - 1) {
+            size_t crrntDim = crrntDepth % this->dimensions; 
+            while (ptr and comp != 0) {
+                comp = comparePoints(srchPoint, ptr->data, crrntDim, this->dimensions);
+                crrntDepth++;
+                if (comp > 0)
+                    ptr = ptr->childs[1];
+                else if (comp < 0)
+                    ptr = ptr->childs[0];
+            }
+            return ptr;
+        }
+
+        comp = comparePoints(srchPoint, ptr->data, crrntDepth % this->dimensions, this->dimensions);
+        crrntDepth++;
+        if (comp > 0)
+            ptr = ptr->childs[1];
+        else if (comp < 0)
+            ptr = ptr->childs[0];
+    }
+    return ptr;
+}
+
+void KDTree::print() {
+    // Prints the tree in a BFS order
+    queue<KDNode*> qq;
+    qq.push(this->root);
+    while(!qq.empty()){
+        if(qq.front()){
+            cout << "-- ";
+            for (const auto& i : qq.front()->data)
+                cout << i << ", ";
+            cout << '\n';
+            qq.push(qq.front()->childs[0]);
+            qq.push(qq.front()->childs[1]);
+        }
+        qq.pop();
+    }
 }
 
 KDTree::~KDTree() {
