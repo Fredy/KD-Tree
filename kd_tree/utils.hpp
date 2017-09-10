@@ -159,7 +159,7 @@ inline int comparePoints(const Point& a, const Point& b, const vector<Types>& ty
                     break;
                 case Types::INT:
                     // TODO: consider "NULL" string!!!!
-                    comp = stoi(a[it]) < stoi(a[it]);
+                    comp = stoi(a[it]) < stoi(b[it]);
                     break;
                 case Types::DOUBLE:
                     comp = stod(a[it]) < stod(b[it]);
