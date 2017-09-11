@@ -1,13 +1,13 @@
 #pragma once
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 using namespace std;
 
 using Point = vector<string>;
 
 class KDNode {
-public:
+   public:
     Point data;
     KDNode* childs[2];
 
@@ -26,5 +26,5 @@ public:
         childs[0] = childs[1] = nullptr;
     }
 
-    ~KDNode() {};
+    ~KDNode(){};
 };
