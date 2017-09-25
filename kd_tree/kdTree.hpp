@@ -4,8 +4,6 @@
 
 class KDTree {
 public:
-    
-
     KDNode* root;
     size_t dimensions;
     size_t depth;
@@ -23,5 +21,9 @@ public:
 
     KDNode* find(const Point& srchPoint) ;
     void print();
+
+    void clear();
+    void clearImp(KDNode *node);
     ~KDTree();
+
 };

@@ -171,5 +171,17 @@ void KDTree::print() {
 }
 
 KDTree::~KDTree() {
-//  TODO
+    this->clear();
 };
+
+void KDTree::clear() {
+    this->clearImp(root);
+}
+
+void KDTree::clearImp(KDNode* ptr) {
+    if(!ptr) return;
+    this->clearImp(ptr->childs[0]);
+    this->clearImp(ptr->childs[1]);
+    delete ptr;
+    ptr = nullptr;
+}
