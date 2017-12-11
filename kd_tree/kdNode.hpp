@@ -4,7 +4,7 @@
 #include <vector>
 using namespace std;
 
-using Point = vector<string>;
+using Point = vector<double>;
 
 class KDNode {
 public:

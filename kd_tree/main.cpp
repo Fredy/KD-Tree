@@ -8,12 +8,13 @@ using namespace std;
 
 
 int main() {
-    string name = "country-capitals.csv";
+    string name = "dataM.csv";
     ifstream file(name);
     auto points = readCSV(file, true);
-    KDTree tree(points, 31312);
-    tree.print();
+    auto sp = points[200];
+    KDTree tree(points, 100000000);
+    //tree.print();
 
-    auto fnd = tree.find(vector<string>{"Wallis and Futuna", "Mata-Utu", "-13.95", "-171.933333", "WF", "Australia"});
+    auto fnd = tree.find(sp);
     cout << (fnd != nullptr ? "Found!" : "Not Found") << endl;
 }

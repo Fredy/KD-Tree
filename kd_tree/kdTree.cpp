@@ -8,7 +8,6 @@
 KDTree::KDTree(vector<Point> &points, const size_t maxDepth) {
   this->dimensions = points.at(0).size();
   this->depth = maxDepth;
-  this->types = typesOfPoints(points);
   this->root = buildTree(points, this->dimensions, maxDepth);
 }
 
@@ -25,8 +24,9 @@ KDNode *KDTree::buildTree(vector<Point> &points, const size_t dimensions,
     sortedIdxs[0][i] = i;
 
   size_t signDim = 0;
+
   auto compareFunc = [&](const auto &a, const auto &b) {
-    return comparePoints(points[a], points[b], this->types, signDim,
+    return comparePoints(points[a], points[b], signDim,
                          dimensions) < 0;
   };
 
@@ -101,7 +101,8 @@ KDNode *KDTree::buildSubTrees(vector<Point> &points,
       size_t idx = sortedIdxs[i][j];
       if (points[idx].empty())
         continue;
-      int cmp = comparePoints(points[idx], node->data, this->types, actualDim,
+      // If a < b -> returns negative, if a >b returns positive, else returns 0.
+      int cmp = comparePoints(points[idx], node->data, actualDim,
                               dimensions);
       if (cmp < 0) {
         sortedIdxs[i - 1][firstHalf] = idx;
@@ -139,7 +140,7 @@ KDNode *KDTree::find(const Point &srchPoint) {
     if (crrntDepth == this->depth - 1) {
       size_t crrntDim = crrntDepth % this->dimensions;
       while (ptr and comp != 0) {
-        comp = comparePoints(srchPoint, ptr->data, this->types, crrntDim,
+        comp = comparePoints(srchPoint, ptr->data, crrntDim,
                              this->dimensions);
         crrntDepth++;
         if (comp > 0)
@@ -150,7 +151,7 @@ KDNode *KDTree::find(const Point &srchPoint) {
       return ptr;
     }
 
-    comp = comparePoints(srchPoint, ptr->data, this->types,
+    comp = comparePoints(srchPoint, ptr->data,
                          crrntDepth % this->dimensions, this->dimensions);
     crrntDepth++;
     if (comp > 0)
